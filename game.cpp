@@ -2,6 +2,7 @@
 #include<SFML/Graphics.hpp>
 #include "Entity.cpp"
 #include "ArialFont.hpp"
+#include <list>
 
 class game
 {
@@ -11,6 +12,7 @@ class game
         void run();
         bool mIsMovingUp = false, mIsMovingDown = false, mIsMovingLeft = false , mIsMovingRight = false; 
         const sf::Time TimePerFrame = sf::seconds(1.f/60.f);
+        std::list <Entity> entityList;
     private:
         void processEvents();
         void update(sf::Time deltaTime);
@@ -18,50 +20,36 @@ class game
         void handlePlayerInput(sf::Keyboard::Key key, bool ispressed);
     private:
         sf::RenderWindow mWindow;
-        sf::CircleShape mPlayer;
-        sf::RectangleShape bounds;
         Entity player;
         Entity box;
-        sf::Text debugText;
-        sf::Font font;
         
 };
 
 game::game()
+    //resoultion 
 : mWindow(sf::VideoMode(640, 480), "SFML Application")
-, mPlayer(), bounds(), player(), debugText()
+, player()
 {
-    sf::Font fromMem;
-    fromMem.loadFromMemory(_home_lee_Documents_Game_fonts_arial_ttf, _home_lee_Documents_Game_fonts_arial_ttf_len);
+
+    //cap framerate at 60fps
+    mWindow.setFramerateLimit(60);
     
     //player draw infolayer.setPosition()
     
-    mPlayer.setRadius(40.f);
-    mPlayer.setPosition(0.f, 0.f);
-    mPlayer.setFillColor(sf::Color::Cyan);
-    bounds.setSize(sf::Vector2f(80.f, 80.f));
-    bounds.setPosition(100.f, 100.f);
-    bounds.setOutlineColor(sf::Color::Red);
-    bounds.setOutlineThickness(5);
-    player.setUp(0.f, 0.f, 80.f, 80.f);
-    box.setUp(100.f, 100.f, 80.f, 80.f);
+    player.setUp(0.f, 0.f, 80.f, 80.f, "player");
+    box.setUp(100.f, 100.f, 80.f, 80.f, "wall");
 
-    debugText.setFont(fromMem);
-    debugText.setCharacterSize(24);
-    debugText.setFillColor(sf::Color::Red);
-    debugText.setStyle(sf::Text::Bold | sf::Text::Underlined);
-    debugText.setString("hello");
-    std::cout.flush();
-    std::cout << "HELLO WORLD!!" << std::endl;
-    
-
-
-    
+    //add entitys to a list
+    entityList.push_back(player);
+    entityList.push_back(box);
+  
 }
 
 
 void game::run()
 {
+    // main internal loop. this function handles the
+    // calls for updating the game and rendering to the screen.
     sf::Clock clock;
     sf::Time timeSinceLatsUpdate = sf::Time::Zero;
     while (mWindow.isOpen())
@@ -84,17 +72,15 @@ void game::run()
 
 void game::processEvents()
 {
+    //event handler
 sf::Event event;
 while (mWindow.pollEvent(event))
 {
-//if (event.type == sf::Event::Closed)
-//mWindow.close();
 
 switch (event.type)
 {
 case sf::Event::KeyPressed:
     handlePlayerInput (event.key.code, true);
-    /* code */
     break;
 case sf::Event::KeyReleased:
     handlePlayerInput(event.key.code, false);
@@ -109,8 +95,11 @@ case sf::Event::Closed:
 }
 }
 
+
+//keyboard input based code goes here
 void game::handlePlayerInput(sf::Keyboard::Key key, bool ispressed)
 {
+    //toggle player inputs using keyboard presses WASD
     switch (key)
     {
     case sf::Keyboard::W:
@@ -130,58 +119,121 @@ void game::handlePlayerInput(sf::Keyboard::Key key, bool ispressed)
 }
 
 
-
+//called every frame
 void game::update(sf::Time deltaTime)
 {
+    //calculate the amount to move the player by per frame
     sf::Vector2f movement(0.f, 0.f);
     if (mIsMovingUp)
-        if(!(mPlayer.getPosition().y <= 0.0f))
+        //check if in level bounds ceiling
+        if(!(player.drawable.getPosition().y <= 0.0f))
         {
             
             movement.y -= 100.f;
         }
+        
     if (mIsMovingDown)
-        if(!(mPlayer.getPosition().y >= 480.f - mPlayer.getRadius()*2))
+        //floor
+        if(!(player.drawable.getPosition().y >= 480.f - player.height))
         {
             movement.y += 100.f;
         }
         
     if (mIsMovingLeft){
-        if(!(mPlayer.getPosition().x <= 0.f ))
+        //left wall
+        if(!(player.drawable.getPosition().x < 0.f ))
         {
             movement.x -= 100.f;
         }
     }
     if (mIsMovingRight)
     {
-        if(!(mPlayer.getPosition().x >= 640.f - mPlayer.getRadius()*2))
+        //right wall
+        if(!(player.drawable.getPosition().x >= 640.f - player.length))
             {
                 movement.x += 100.f;
             }
     }
-    //bounds.move(mPlayer.getPosition());
     
-    player.move(movement * deltaTime.asSeconds());
-    if(!player.checkCollision(box))
-    {
-        mPlayer.setPosition(player.xPos, player.yPos);
-           
-    }
-    else
-    {
-        player.setPos(mPlayer.getPosition());
-        std::cout << "collision Detected" << std::endl;
+    
 
-    }
-    //std::cout << ("hitBox pos = " + std::to_string(player.xPos) + "," + std::to_string(player.yPos)) << std::endl;
+
+    //take a none drawn step
+    player.move(movement * deltaTime.asSeconds());
+    
+
+        
+               
+        std::list<Entity>::iterator it;
+        
+
+        
+         for (it = entityList.begin(); it != entityList.end(); ++it)
+        {
+            //compating collision with self, try compating the address
+            //if address != this objects address
+            //also think about how to add collectables
+
+
+            if(player.name != it->name)
+            {
+                if(!player.checkCollision(*it))
+            {
+                //draw the new step
+                player.drawable.setPosition(player.xPos, player.yPos);
+                
+                //debugging player position and hitbox position
+                std::cout << std::to_string(player.drawable.getPosition().x) << std::endl;
+                std::cout << std::to_string(player.drawable.getPosition().y) << std::endl;
+                std::cout << "wall location: " + std::to_string(box.xPos) +"  " + std::to_string(box.yPos) << std::endl;
+            }
+            else
+            {   
+            //a collision has occured stop the player from moving in the colliding direction
+            player.setPos(player.drawable.getPosition());
+            std::cout << "collision Detected" << std::endl;
+
+            }
+            }
+        }
+        
+        /* 
+       if(!player.checkCollision(box))
+            {
+                //draw the new step
+                player.drawable.setPosition(player.xPos, player.yPos);
+                //debugging player position and hitbox position
+                std::cout << std::to_string(player.drawable.getPosition().x) << std::endl;
+                std::cout << std::to_string(player.drawable.getPosition().y) << std::endl;
+                std::cout << "wall location: " + std::to_string(box.xPos) +"  " + std::to_string(box.yPos) << std::endl;
+            }
+            else
+            {   
+            //a collision has occured stop the player from moving in the colliding direction
+            player.setPos(player.drawable.getPosition());
+            std::cout << "collision Detected" << std::endl;
+
+            }
+            */
+        
+
     }
 
 
 void game::render()
 {
     mWindow.clear();
-    mWindow.draw(bounds);
-    mWindow.draw(mPlayer);
+
+       /** 
+        *         NEEDTO FIX
+        * std::list<Entity>::iterator it;
+        for (it = entityList.begin(); it != entityList.end(); ++it)
+        {
+        mWindow.draw(it->drawable);
+        }**/
+
+    mWindow.draw(player.drawable);
+    mWindow.draw(box.drawable);
     mWindow.display();
 }
 
