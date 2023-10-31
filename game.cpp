@@ -12,7 +12,7 @@ class game
         void run();
         bool mIsMovingUp = false, mIsMovingDown = false, mIsMovingLeft = false , mIsMovingRight = false; 
         const sf::Time TimePerFrame = sf::seconds(1.f/60.f);
-        std::list <Entity> entityList;
+        std::list <Entity*> entityList;
     private:
         void processEvents();
         void update(sf::Time deltaTime);
@@ -22,6 +22,8 @@ class game
         sf::RenderWindow mWindow;
         Entity player;
         Entity box;
+        Entity box2;
+        Entity box3;
         
 };
 
@@ -38,10 +40,13 @@ game::game()
     
     player.setUp(0.f, 0.f, 80.f, 80.f, "player");
     box.setUp(100.f, 100.f, 80.f, 80.f, "wall");
-
+    box2.setUp(250.f, 150.f, 80.f, 80.f, "wall");
+    box3.setUp(300.f, 300.f, 80.f, 80.f, "wall");
     //add entitys to a list
-    entityList.push_back(player);
-    entityList.push_back(box);
+    entityList.push_back(&player);
+    entityList.push_back(&box);
+    entityList.push_back(&box2);
+    entityList.push_back(&box3);
   
 }
 
@@ -159,64 +164,31 @@ void game::update(sf::Time deltaTime)
 
 
     //take a none drawn step
-    player.move(movement * deltaTime.asSeconds());
-    
-
-        
-               
-        std::list<Entity>::iterator it;
-        
-
-        
+    sf::Vector2f prevPos =  sf::Vector2f(player.xPos, player.yPos);
+    player.move(movement * deltaTime.asSeconds());            
+    std::list<Entity *>::iterator it;
          for (it = entityList.begin(); it != entityList.end(); ++it)
         {
-            //compating collision with self, try compating the address
-            //if address != this objects address
-            //also think about how to add collectables
-
-
-            if(player.name != it->name)
+            if(player.name != (*it)->name)
             {
-                if(!player.checkCollision(*it))
-            {
-                //draw the new step
-                player.drawable.setPosition(player.xPos, player.yPos);
-                
-                //debugging player position and hitbox position
-                std::cout << std::to_string(player.drawable.getPosition().x) << std::endl;
-                std::cout << std::to_string(player.drawable.getPosition().y) << std::endl;
-                std::cout << "wall location: " + std::to_string(box.xPos) +"  " + std::to_string(box.yPos) << std::endl;
-            }
-            else
-            {   
-            //a collision has occured stop the player from moving in the colliding direction
-            player.setPos(player.drawable.getPosition());
-            std::cout << "collision Detected" << std::endl;
+                if(!player.checkCollision((*it))){ 
+                    //draw the new step
+                    player.drawable.setPosition(player.xPos, player.yPos);           
+                    //debugging player position and hitbox position
+                    std::cout << std::to_string(player.drawable.getPosition().x) << std::endl;
+                    std::cout << std::to_string(player.drawable.getPosition().y) << std::endl;
+                    std::cout << "wall location: " + std::to_string(box.xPos) +"  " + std::to_string(box.yPos) << std::endl;
+                }
+                else{   
+                    //a collision has occured stop the player from moving in the colliding direction
+                    std::cout << "drawable position = " + std::to_string(player.drawable.getPosition().x )<< std::endl;
+                    std::cout << "player position = " + std::to_string(player.xPos )<< std::endl;
 
+                    player.setPos(prevPos);
+                    std::cout << "collision Detected" << std::endl;
+                }
             }
-            }
-        }
-        
-        /* 
-       if(!player.checkCollision(box))
-            {
-                //draw the new step
-                player.drawable.setPosition(player.xPos, player.yPos);
-                //debugging player position and hitbox position
-                std::cout << std::to_string(player.drawable.getPosition().x) << std::endl;
-                std::cout << std::to_string(player.drawable.getPosition().y) << std::endl;
-                std::cout << "wall location: " + std::to_string(box.xPos) +"  " + std::to_string(box.yPos) << std::endl;
-            }
-            else
-            {   
-            //a collision has occured stop the player from moving in the colliding direction
-            player.setPos(player.drawable.getPosition());
-            std::cout << "collision Detected" << std::endl;
-
-            }
-            */
-        
-
+        }    
     }
 
 
@@ -224,16 +196,14 @@ void game::render()
 {
     mWindow.clear();
 
-       /** 
-        *         NEEDTO FIX
-        * std::list<Entity>::iterator it;
-        for (it = entityList.begin(); it != entityList.end(); ++it)
+    std::list<Entity*>::iterator it;
+    for (it = entityList.begin(); it != entityList.end(); ++it)
         {
-        mWindow.draw(it->drawable);
-        }**/
+        mWindow.draw((*it)->drawable);       
+        }
 
-    mWindow.draw(player.drawable);
-    mWindow.draw(box.drawable);
+    //mWindow.draw(player.drawable);
+    //mWindow.draw(box.drawable);
     mWindow.display();
 }
 

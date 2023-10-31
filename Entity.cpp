@@ -55,14 +55,14 @@ class Entity
         
     }
 
-    bool checkCollision(Entity collidableEntity)
+    bool checkCollision(Entity* collidableEntity)
     {
-        std::cout << ("hitBox pos = " + std::to_string(collidableEntity.height) + "," + std::to_string(this->yPos)) << std::endl;
+        std::cout << ("hitBox pos = " + std::to_string((*collidableEntity).height) + "," + std::to_string(this->yPos)) << std::endl;
         return
-                xPos + length >= collidableEntity.xPos &&
-                xPos <= collidableEntity.xPos + collidableEntity.length &&
-                yPos + height >= collidableEntity.yPos &&
-                yPos <= collidableEntity.yPos + collidableEntity.height;
+                xPos + length >= (*collidableEntity).xPos &&
+                xPos <= (*collidableEntity).xPos + (*collidableEntity).length &&
+                yPos + height >= (*collidableEntity).yPos &&
+                yPos <= (*collidableEntity).yPos + (*collidableEntity).height;
                 
 
     }
