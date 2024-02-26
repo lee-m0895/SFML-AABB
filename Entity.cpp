@@ -1,24 +1,5 @@
-#include <iostream>
-#include <SFML/Graphics.hpp>
-#include <string>
-
-
-class Entity
-{
-    public:
-     float xPos, yPos;
-     float length, height; 
-     bool toggle = true;
-     std::string name;
-     sf::RectangleShape drawable;
-
-    Entity()
-    {
-     
-    };
-
-
-    void setUp(float xPos, float yPos, float length, float height, std::string name)
+    #include "Entity.h"
+     void Entity::setUp(float xPos, float yPos, float length, float height, std::string name)
     {
         this->xPos = xPos;
         this->yPos = yPos;
@@ -28,19 +9,18 @@ class Entity
         
         drawable.setPosition(xPos, yPos);
         drawable.setSize(sf::Vector2f(length, height));
-        drawable.setFillColor(sf::Color::Red);
-
-    
-         
+        drawable.setFillColor(sf::Color::Red);      
     }
 
-    sf::RectangleShape getShape()
+
+
+    sf::RectangleShape Entity::getShape()
     {
         return this->drawable;
     }
 
 
-    void move(sf::Vector2f newPos)
+    void Entity::move(sf::Vector2f newPos)
     {
         this->xPos += newPos.x;
         this->yPos += newPos.y;
@@ -48,23 +28,20 @@ class Entity
 
     }
 
-    void setPos(sf::Vector2f newPos)
+    void Entity::setPos(sf::Vector2f newPos)
     {
         this->xPos = newPos.x;
         this->yPos = newPos.y;
         
     }
 
-    bool checkCollision(Entity* collidableEntity)
+     bool Entity::checkCollision(Entity* collidableEntity) 
     {
-        std::cout << ("hitBox pos = " + std::to_string((*collidableEntity).height) + "," + std::to_string(this->yPos)) << std::endl;
         return
-                xPos + length >= (*collidableEntity).xPos &&
-                xPos <= (*collidableEntity).xPos + (*collidableEntity).length &&
-                yPos + height >= (*collidableEntity).yPos &&
-                yPos <= (*collidableEntity).yPos + (*collidableEntity).height;
+                xPos + length >= collidableEntity->xPos &&
+                xPos <= collidableEntity->xPos + collidableEntity->length &&
+                yPos + height >= collidableEntity->yPos &&
+                yPos <= collidableEntity->yPos + collidableEntity->height;
                 
 
     }
-
-};
