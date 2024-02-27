@@ -26,7 +26,7 @@ class game
     private:
         sf::RenderWindow mWindow;
         Player player;
-        Collectable box;
+        Collectable box = Collectable(&player);
         Entity box2;
         Entity box3;
 
@@ -46,11 +46,12 @@ game::game()
     mWindow.setFramerateLimit(60);
     
     //player draw infolayer.setPosition()
-    
     player.setUp(0.f, 0.f, 80.f, 80.f, "player");
-    box.setUp(100.f, 100.f, 80.f, 80.f, "wall");
+    box.setUp(250.f, 20.f,  80.f, 80.f, "collectable");
     box2.setUp(250.f, 150.f, 80.f, 80.f, "wall");
     box3.setUp(300.f, 300.f, 80.f, 80.f, "wall");
+
+
     //add entitys to a list
     entityList.push_back(&player);
     entityList.push_back(&box);
@@ -167,6 +168,7 @@ void game::update(sf::Time deltaTime)
 void game::render()
 {
     mWindow.clear();
+    text.setString("SCORE: " + std::to_string(player.score));
     mWindow.draw(text);
     std::list<Entity*>::iterator it;
     for (it = entityList.begin(); it != entityList.end(); ++it)
